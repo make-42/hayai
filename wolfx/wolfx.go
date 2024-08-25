@@ -140,7 +140,7 @@ func Listen() {
 						warnareas += "\nWarnings issued for:"
 					}
 					for _, warnarea := range jmaeew.WarnArea {
-						warnareas += fmt.Sprintf("\n - %s (at %s) [Shindo %s / %s] [%s]", warnarea.Chiiki, warnarea.Time, warnarea.Shindo1, warnarea.Shindo2, warnarea.Type)
+						warnareas += fmt.Sprintf("\n - %s (at %s JST) [Shindo %s / %s] [%s]", warnarea.Chiiki, warnarea.Time, warnarea.Shindo1, warnarea.Shindo2, warnarea.Type)
 					}
 					alert_body := fmt.Sprintf("Epicenter: %s\nMagnitude %0.1f\nApproximately magnitude %0.1f at your location%s\n\nStrong shaking is expected soon.\nStay calm and seek shelter nearby.\n\nOrigin time: %s JST\nAnnouncement time: %s JST\nDepth: %dkm\nCoordinates: %0.1f, %0.1f\n\nSource: %s\nStatus: %s\n\n%s", jmaeew.Hypocenter, jmaeew.Magunitude, equivalentMagnitude, warnareas, jmaeew.OriginTime, jmaeew.AnnouncedTime, jmaeew.Depth, jmaeew.Latitude, jmaeew.Longitude, jmaeew.Issue.Source, jmaeew.Issue.Status, jmaeew.OriginalText)
 					if config.Config.IssuePopup {

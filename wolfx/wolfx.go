@@ -14,14 +14,15 @@ import (
 
 	"embed"
 
+	"github.com/faiface/beep"
+	"github.com/faiface/beep/flac"
 	"github.com/faiface/beep/speaker"
-	"github.com/faiface/beep/wav"
 	"github.com/gen2brain/beeep"
 	"github.com/gorilla/websocket"
 	"github.com/sqweek/dialog"
 )
 
-//go:embed assets/alert-sat.wav
+//go:embed assets/alertv3-sat.flac
 var alertSoundFile embed.FS
 
 type TypeMessage struct {
@@ -85,10 +86,10 @@ var LastRetry time.Time
 
 func Listen() {
 	// Init sound
-	alertSound, err := alertSoundFile.Open("assets/alert-sat.wav")
+	alertSound, err := alertSoundFile.Open("assets/alertv3-sat.flac")
 	utils.CheckError(err)
 	defer alertSound.Close()
-	streamer, format, err := wav.Decode(alertSound)
+	streamer, format, err := flac.Decode(alertSound)
 	utils.CheckError(err)
 	defer streamer.Close()
 	// Listen
@@ -161,11 +162,11 @@ func Listen() {
 					if config.Config.IssueWarningSound {
 						speaker.Init(format.SampleRate, format.SampleRate.N(time.Second/10))
 						streamer.Seek(0)
-						speaker.Play(streamer)
-						for i := 0; i < 10; i++ {
-							time.Sleep(2 * time.Second)
-							streamer.Seek(0)
-						}
+						donep := make(chan bool)
+						speaker.Play(beep.Seq(streamer, beep.Callback(func() {
+							donep <- true
+						})))
+						<-donep
 						speaker.Close()
 					}
 				}

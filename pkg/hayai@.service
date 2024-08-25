@@ -1,5 +1,5 @@
 [Unit]
-Description=An EEW system for Linux
+Description=hayai - An EEW system for Linux
 After=network.target
 StartLimitIntervalSec=60
 StartLimitBurst=4

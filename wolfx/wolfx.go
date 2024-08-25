@@ -50,7 +50,7 @@ type WarnArea struct {
 	Shindo2 string
 	Time    string
 	Type    string
-	Arrive  string
+	Arrive  bool
 }
 
 type JMAEEW struct {
@@ -134,7 +134,14 @@ func Listen() {
 				}
 				equivalentMagnitude := seismo.CalculateEquivalentMagnitude(jmaeew.Magunitude, jmaeew.Latitude, jmaeew.Longitude, config.Config.Latitude, config.Config.Longitude)
 				if config.Config.IssueWarningAtAnyMagnitude || config.Config.IssueWarningAtEquivalentMagnitude < equivalentMagnitude {
-					alert_body := fmt.Sprintf("Epicenter: %s\nMagnitude %0.1f\nApproximately magnitude %0.1f at your location\nStrong shaking is expected soon.\nStay calm and seek shelter nearby.\n\nOrigin time: %s JST\nAnnouncement time: %s JST\nDepth: %dkm\nCoordinates: %0.1f, %0.1f\n\nSource: %s\nStatus: %s\n\n%s", jmaeew.Hypocenter, jmaeew.Magunitude, equivalentMagnitude, jmaeew.OriginTime, jmaeew.AnnouncedTime, jmaeew.Depth, jmaeew.Latitude, jmaeew.Longitude, jmaeew.Issue.Source, jmaeew.Issue.Status, jmaeew.OriginalText)
+					warnareas := ""
+					if len(jmaeew.WarnArea) != 0 {
+						warnareas += "\nWarnings issued for:"
+					}
+					for _, warnarea := range jmaeew.WarnArea {
+						warnareas += fmt.Sprintf("\n - %s (at %s) [Shindo %s / %s] [%s]", warnarea.Chiiki, warnarea.Time, warnarea.Shindo1, warnarea.Shindo2, warnarea.Type)
+					}
+					alert_body := fmt.Sprintf("Epicenter: %s\nMagnitude %0.1f\nApproximately magnitude %0.1f at your location%s\n\nStrong shaking is expected soon.\nStay calm and seek shelter nearby.\n\nOrigin time: %s JST\nAnnouncement time: %s JST\nDepth: %dkm\nCoordinates: %0.1f, %0.1f\n\nSource: %s\nStatus: %s\n\n%s", jmaeew.Hypocenter, jmaeew.Magunitude, equivalentMagnitude, warnareas, jmaeew.OriginTime, jmaeew.AnnouncedTime, jmaeew.Depth, jmaeew.Latitude, jmaeew.Longitude, jmaeew.Issue.Source, jmaeew.Issue.Status, jmaeew.OriginalText)
 					if config.Config.IssuePopup {
 						go dialog.Message("%s", alert_body).Title("Early Earthquake Warning!").Info()
 					}

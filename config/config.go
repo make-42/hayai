@@ -19,6 +19,7 @@ type ConfigS struct {
 	IssueNotification                 bool
 	OpenWebPages                      bool
 	TestWarning                       bool
+	RetryConnectionEveryXS            float64
 }
 
 var Config ConfigS
@@ -34,6 +35,7 @@ var DefaultConfig = ConfigS{
 	IssueNotification:                 true,
 	OpenWebPages:                      false,
 	TestWarning:                       false,
+	RetryConnectionEveryXS:            30,
 }
 
 func Init() {

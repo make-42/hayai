@@ -81,6 +81,8 @@ type JMAEEW struct {
 	Pond          string
 }
 
+var LastRetry time.Time
+
 func Listen() {
 	// Init sound
 	alertSound, err := alertSoundFile.Open("assets/alert-sat.wav")
@@ -91,65 +93,76 @@ func Listen() {
 	defer streamer.Close()
 	// Listen
 	u := url.URL{Scheme: "wss", Host: constants.WSHost, Path: "/all_eew"}
-	log.Printf("connecting to %s", u.String())
-
-	c, _, err := websocket.DefaultDialer.Dial(u.String(), nil)
-	if err != nil {
-		log.Fatal("dial:", err)
-	}
-	defer c.Close()
-
-	done := make(chan struct{})
-
-	defer close(done)
-
-	log.Printf("connected.")
 	for {
-		_, message, err := c.ReadMessage()
-		utils.CheckError(err)
-		var typeMessage TypeMessage
-		if config.Config.TestWarning {
-			message = constants.TestMessage
+		log.Printf("connecting to %s", u.String())
+		c, _, err := websocket.DefaultDialer.Dial(u.String(), nil)
+		if err != nil {
+			log.Print("dial:", err)
+			time.Sleep(time.Duration(config.Config.RetryConnectionEveryXS) * time.Second)
+			continue
 		}
-		json.Unmarshal(message, &typeMessage)
-		if typeMessage.Type == "jma_eew" {
-			log.Printf("recv: %s", message)
-			var jmaeew JMAEEW
-			json.Unmarshal(message, &jmaeew)
-			if !jmaeew.IsWarn && config.Config.OnlyWarnings {
-				continue
+
+		defer c.Close()
+
+		done := make(chan struct{})
+
+		defer close(done)
+
+		log.Printf("connected.")
+		for {
+			_, message, err := c.ReadMessage()
+			utils.CheckError(err)
+			if message == nil {
+				log.Printf("connection lost.")
+				if time.Since(LastRetry) < time.Duration(config.Config.RetryConnectionEveryXS)*time.Second {
+					time.Sleep(time.Duration(config.Config.RetryConnectionEveryXS) * time.Second)
+					LastRetry = time.Now()
+				}
+				break
 			}
-			equivalentMagnitude := seismo.CalculateEquivalentMagnitude(jmaeew.Magunitude, jmaeew.Latitude, jmaeew.Longitude, config.Config.Latitude, config.Config.Longitude)
-			if config.Config.IssueWarningAtAnyMagnitude || config.Config.IssueWarningAtEquivalentMagnitude < equivalentMagnitude {
-				alert_body := fmt.Sprintf("Epicenter: %s\nMagnitude %0.1f\nApproximately magnitude %0.1f at your location\nStrong shaking is expected soon.\nStay calm and seek shelter nearby.\n\nOrigin time: %s JST\nAnnouncement time: %s JST\nDepth: %dkm\nCoordinates: %0.1f, %0.1f\n\nSource: %s\nStatus: %s\n\n%s", jmaeew.Hypocenter, jmaeew.Magunitude, equivalentMagnitude, jmaeew.OriginTime, jmaeew.AnnouncedTime, jmaeew.Depth, jmaeew.Latitude, jmaeew.Longitude, jmaeew.Issue.Source, jmaeew.Issue.Status, jmaeew.OriginalText)
-				if config.Config.IssuePopup {
-					go dialog.Message("%s", alert_body).Title("Early Earthquake Warning!").Info()
+			var typeMessage TypeMessage
+			if config.Config.TestWarning {
+				message = constants.TestMessage
+			}
+			json.Unmarshal(message, &typeMessage)
+			if typeMessage.Type == "jma_eew" {
+				log.Printf("recv: %s", message)
+				var jmaeew JMAEEW
+				json.Unmarshal(message, &jmaeew)
+				if !jmaeew.IsWarn && config.Config.OnlyWarnings {
+					continue
 				}
-
-				if config.Config.IssueNotification {
-					homedir, err := os.UserHomeDir()
-					utils.CheckError(err)
-					err = beeep.Notify("Early Earthquake Warning!", alert_body, homedir+"/.icons/actions/scalable/dialog-warning.svg")
-					utils.CheckError(err)
-				}
-
-				if config.Config.OpenWebPages {
-					utils.OpenURL(constants.OpenURLA)
-					utils.OpenURL(constants.OpenURLB)
-				}
-
-				if config.Config.IssueWarningSound {
-					speaker.Init(format.SampleRate, format.SampleRate.N(time.Second/10))
-					streamer.Seek(0)
-					speaker.Play(streamer)
-					for i := 0; i < 10; i++ {
-						time.Sleep(2 * time.Second)
-						streamer.Seek(0)
+				equivalentMagnitude := seismo.CalculateEquivalentMagnitude(jmaeew.Magunitude, jmaeew.Latitude, jmaeew.Longitude, config.Config.Latitude, config.Config.Longitude)
+				if config.Config.IssueWarningAtAnyMagnitude || config.Config.IssueWarningAtEquivalentMagnitude < equivalentMagnitude {
+					alert_body := fmt.Sprintf("Epicenter: %s\nMagnitude %0.1f\nApproximately magnitude %0.1f at your location\nStrong shaking is expected soon.\nStay calm and seek shelter nearby.\n\nOrigin time: %s JST\nAnnouncement time: %s JST\nDepth: %dkm\nCoordinates: %0.1f, %0.1f\n\nSource: %s\nStatus: %s\n\n%s", jmaeew.Hypocenter, jmaeew.Magunitude, equivalentMagnitude, jmaeew.OriginTime, jmaeew.AnnouncedTime, jmaeew.Depth, jmaeew.Latitude, jmaeew.Longitude, jmaeew.Issue.Source, jmaeew.Issue.Status, jmaeew.OriginalText)
+					if config.Config.IssuePopup {
+						go dialog.Message("%s", alert_body).Title("Early Earthquake Warning!").Info()
 					}
-					speaker.Close()
+
+					if config.Config.IssueNotification {
+						homedir, err := os.UserHomeDir()
+						utils.CheckError(err)
+						err = beeep.Notify("Early Earthquake Warning!", alert_body, homedir+"/.icons/actions/scalable/dialog-warning.svg")
+						utils.CheckError(err)
+					}
+
+					if config.Config.OpenWebPages {
+						utils.OpenURL(constants.OpenURLA)
+						utils.OpenURL(constants.OpenURLB)
+					}
+
+					if config.Config.IssueWarningSound {
+						speaker.Init(format.SampleRate, format.SampleRate.N(time.Second/10))
+						streamer.Seek(0)
+						speaker.Play(streamer)
+						for i := 0; i < 10; i++ {
+							time.Sleep(2 * time.Second)
+							streamer.Seek(0)
+						}
+						speaker.Close()
+					}
 				}
 			}
 		}
 	}
-
 }

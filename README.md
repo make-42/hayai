@@ -26,7 +26,7 @@ Clone this repo.
 
 Build this project with `go build -ldflags -H=windowsgui` (`go` is required).
 
-Set the `hayai.exe` to automatically start with your session.
+Set the `hayai.exe` to automatically start with your session (by adding a shortcut to it to `C:\Users\<User>\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Startup`.
 
 # Configuration
 You can configure the software by modifying the values in `~/.config/ontake/hayai/config.yml` (on Linux) and `C:\Users\<User>\AppData\Roaming\ontake\hayai\config.yml` (on Windows) and then restarting `hayai`.

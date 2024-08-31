@@ -24,7 +24,7 @@ Clone this repo.
 
 `cd` into it.
 
-Build this project with `go build` (`go` is required).
+Build this project with `go build -ldflags -H=windowsgui` (`go` is required).
 
 Set the `hayai.exe` to automatically start with your session.
 

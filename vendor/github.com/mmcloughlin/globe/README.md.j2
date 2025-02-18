@@ -1,0 +1,64 @@
+# globe
+
+Globe wireframe visualizations in Golang backed by
+[pinhole](https://github.com/tidwall/pinhole).
+
+[![go.dev Reference](https://img.shields.io/badge/doc-reference-007d9b?logo=go&style=flat-square)](https://pkg.go.dev/github.com/mmcloughlin/globe)
+![Build status](https://img.shields.io/github/actions/workflow/status/mmcloughlin/globe/ci.yml?style=flat-square)
+
+{% macro image(name) -%}
+<p align="center"><img src="{% include 'examples/' + name + '.imgur' %}" /></p>
+{%- endmacro %}
+
+{% macro code(name) -%}
+```go
+{% include 'examples/' + name + '.snip' %}
+```
+{%- endmacro %}
+
+{{ image('cities') }}
+
+## Getting Started
+
+Install `globe` with
+
+```sh
+$ go get -u github.com/mmcloughlin/globe
+```
+
+Start with a blank globe with a graticule at 10 degree intervals.
+
+{{ code('graticule') }}
+{{ image('graticule') }}
+
+Add some land boundaries and center it on a point. Alternatively
+[`DrawCountryBoundaries`](https://godoc.org/github.com/mmcloughlin/globe#Globe.DrawCountryBoundaries)
+will give you countries.
+
+{{ code('land') }}
+{{ image('land') }}
+
+Here's all the [Starbucks
+locations](https://github.com/mmcloughlin/starbucks). Note `color.NRGBA`
+recommended to [avoid
+artifacts](https://github.com/mmcloughlin/globe/issues/6).
+
+{{ code('starbucks') }}
+{{ image('starbucks') }}
+
+You can also do lines along great circles.
+
+{{ code('line') }}
+{{ image('line') }}
+
+Also rectangles.
+
+{{ code('rect') }}
+{{ image('rect') }}
+
+See [examples](examples/) and [package
+documentation](https://pkg.go.dev/github.com/mmcloughlin/globe) for more.
+
+## License
+
+`globe` is available under the ISC [License](/LICENSE).

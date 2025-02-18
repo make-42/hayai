@@ -9,6 +9,7 @@ import (
 	"image/color"
 	"log"
 	"math"
+	"os"
 	"time"
 
 	"github.com/disintegration/imaging"
@@ -34,8 +35,7 @@ var Displaying bool
 
 func (g *Game) Update() error {
 	if ebiten.IsWindowBeingClosed() {
-		Displaying = false
-		return ebiten.Termination
+		os.Exit(0)
 	}
 	return nil // Add kill after timer TODO
 }
@@ -160,7 +160,7 @@ func Render(event jmaeew.JMAEEW) {
 		ebiten.SetWindowPosition(screenW/2-config.Config.RealtimeVisRenderSize/2, screenH/2-config.Config.RealtimeVisRenderSize/2)
 		ebiten.SetVsyncEnabled(true)
 		ebiten.SetWindowClosingHandled(true)
-		if err := ebiten.RunGameWithOptions(gameData, &ebiten.RunGameOptions{ScreenTransparent: true}); err != nil {
+		if err := ebiten.RunGameWithOptions(gameData, &ebiten.RunGameOptions{}); err != nil {
 			log.Fatal(err)
 		}
 	}

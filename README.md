@@ -3,6 +3,10 @@ An EEW system for Linux using JMA data provided by the Wolfx Project.
 
 This software comes with zero guarantee. This software could fail at any time. I made this since there were no better free and open source alternatives for Linux.
 
+# Real time vis
+**VERY IMPORTANT**:
+Because of how the real time visualisation is implemented, you will have to restart the process when you close the realtime visualisation window.
+
 # Installation
 ## Linux
 Install the `ontake-hayai-git` package from the AUR if on Arch. For other distros you can just build `hayai` from source with `go build` (only `go` is required).

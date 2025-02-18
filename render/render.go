@@ -118,7 +118,7 @@ func DrawCircle(g *globe.Globe, lat, lon float64, radius float64, color globe.Op
 	pointLats := []float64{}
 	pointLons := []float64{}
 	for i := 0; i < config.Config.RealtimeVisCircleResolution; i++ {
-		gData := wgs84.Direct(lat, lon, float64(i)/float64(config.Config.RealtimeVisCircleResolution)*360., radius/360*math.Pi*wgs84.EquatorialRadius())
+		gData := wgs84.Direct(lat, lon, float64(i)/float64(config.Config.RealtimeVisCircleResolution)*360., radius/180*math.Pi*wgs84.EquatorialRadius())
 		pointLats = append(pointLats, gData.Lat2)
 		pointLons = append(pointLons, gData.Lon2)
 	}

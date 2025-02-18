@@ -147,6 +147,11 @@ func (g *Game) Layout(outsideWidth, outsideHeight int) (int, int) {
 }
 
 func Render(event jmaeew.JMAEEW) {
+	if config.Config.TestWarning {
+		t := time.Now()
+		_, offset := t.Zone()
+		event.OriginTime = time.Now().Add(time.Second * time.Duration(9*3600-offset)).Format("2006/01/02 15:04:05")
+	}
 	gameData = &Game{event, ComputeLoveImpactTime(event)}
 	if !Displaying {
 		Displaying = true

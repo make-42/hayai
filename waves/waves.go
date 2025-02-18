@@ -279,3 +279,7 @@ func TimeToTravel(wave Wave, time float64) (float64, float64, float64, bool, boo
 	}
 	return travel, travelA, travelB, double, exists
 }
+
+func PredictLoveWaveImpactTime(angle float64) float64 { // degrees to seconds
+	return WaveList[1].AkimaSpline.Predict(angle)
+}

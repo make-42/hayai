@@ -26,7 +26,8 @@ import (
 var gameData *Game
 
 type Game struct {
-	Event jmaeew.JMAEEW
+	Event      jmaeew.JMAEEW
+	ImpactTime float64
 }
 
 var Displaying bool
@@ -39,13 +40,19 @@ func (g *Game) Update() error {
 	return nil // Add kill after timer TODO
 }
 
+func ComputeLoveImpactTime(event jmaeew.JMAEEW) float64 {
+	wgs84 := geodesic.WGS84
+	line := wgs84.InverseLine(event.Latitude, event.Longitude, config.Config.Latitude, config.Config.Longitude)
+	return waves.PredictLoveWaveImpactTime(line.Arc())
+}
+
 func (g *Game) Draw(screen *ebiten.Image) {
 	jst := time.FixedZone("JST", 9*3600)
 	// fake time here for testing
-	g.Event.OriginTime = "2025/02/18 22:17:39"
+	// g.Event.OriginTime = "2025/02/18 22:45:30"
 	originalTimeParsed, _ := time.ParseInLocation("2006/01/02 15:04:05", g.Event.OriginTime, jst)
 
-	currentTime := float64(time.Now().Sub(originalTimeParsed).Nanoseconds()) / 10e9
+	currentTime := float64(time.Now().Sub(originalTimeParsed).Nanoseconds()) / 1e9
 	gl := globe.New()
 	gl.DrawGraticule(10.0)
 	gl.DrawLandBoundaries()
@@ -74,7 +81,7 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	ctx.SetFontFace(FontFace)
 	ctx.DrawString(fmt.Sprintf("Detected a M%0.1f earthquake in %s", g.Event.Magunitude, g.Event.Title), config.Config.RealtimeVisTextPadding, config.Config.RealtimeVisTextPadding+config.Config.RealtimeVisFontSize)
 	ctx.DrawString(fmt.Sprintf("%0.4f, %0.4f @ %d km", g.Event.Latitude, g.Event.Longitude, g.Event.Depth), config.Config.RealtimeVisTextPadding, config.Config.RealtimeVisTextPadding+2*config.Config.RealtimeVisFontSize)
-	ctx.DrawString(fmt.Sprintf("Love waves impact in %%s", g.Event.Latitude, g.Event.Longitude, g.Event.Depth), config.Config.RealtimeVisTextPadding, config.Config.RealtimeVisTextPadding+3*config.Config.RealtimeVisFontSize)
+	ctx.DrawString(fmt.Sprintf("Love waves impact in %0.1fs", g.ImpactTime-currentTime), config.Config.RealtimeVisTextPadding, config.Config.RealtimeVisTextPadding+3*config.Config.RealtimeVisFontSize)
 
 	for i, wave := range waves.WaveList {
 		travel, travelA, travelB, double, exists := waves.TimeToTravel(*wave, currentTime)
@@ -140,7 +147,7 @@ func (g *Game) Layout(outsideWidth, outsideHeight int) (int, int) {
 }
 
 func Render(event jmaeew.JMAEEW) {
-	gameData = &Game{event}
+	gameData = &Game{event, ComputeLoveImpactTime(event)}
 	if !Displaying {
 		Displaying = true
 		//ebiten.SetWindowIcon([]image.Image{icons.WindowIcon48, icons.WindowIcon32, icons.WindowIcon16})

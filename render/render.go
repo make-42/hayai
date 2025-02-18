@@ -58,7 +58,7 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	gl.DrawLandBoundaries()
 	green := color.NRGBA{0x00, 0x64, 0x3c, 192}
 	red := color.NRGBA{0xff, 0x42, 0x3c, 192}
-	gl.DrawDot(config.Config.Latitude, config.Config.Latitude, 0.05, globe.Color(green))
+	gl.DrawDot(config.Config.Latitude, config.Config.Longitude, 0.05, globe.Color(green))
 	gl.DrawDot(g.Event.Latitude, g.Event.Longitude, 0.05, globe.Color(red))
 
 	// Draw waves

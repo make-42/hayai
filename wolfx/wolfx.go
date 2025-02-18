@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"hayai/config"
 	"hayai/constants"
+	"hayai/jmaeew"
+	"hayai/render"
 	"hayai/seismo"
 	"hayai/utils"
 	"log"
@@ -24,63 +26,6 @@ import (
 
 //go:embed assets/alertv3-sat.flac
 var alertSoundFile embed.FS
-
-type TypeMessage struct {
-	Type string
-}
-
-type Issue struct {
-	Source string
-	Status string
-}
-
-type Accuracy struct {
-	Epicenter string
-	Depth     string
-	Magnitude string
-}
-
-type MaxIntChange struct {
-	String string
-	Reason string
-}
-
-type WarnArea struct {
-	Chiiki  string
-	Shindo1 string
-	Shindo2 string
-	Time    string
-	Type    string
-	Arrive  bool
-}
-
-type JMAEEW struct {
-	Type          string
-	Title         string
-	CodeType      string
-	Issue         Issue
-	EventID       string
-	Serial        int
-	AnnouncedTime string
-	OriginTime    string
-	Hypocenter    string
-	Latitude      float64
-	Longitude     float64
-	Magunitude    float64
-	Depth         int
-	MaxIntensity  string
-	Accuracy      Accuracy
-	MaxIntChange  MaxIntChange
-	WarnArea      []WarnArea
-	IsSea         bool
-	IsTraining    bool
-	IsAssumption  bool
-	IsWarn        bool
-	IsFinal       bool
-	IsCancel      bool
-	OriginalText  string
-	Pond          string
-}
 
 var LastRetry time.Time
 
@@ -121,14 +66,14 @@ func Listen() {
 				}
 				break
 			}
-			var typeMessage TypeMessage
+			var typeMessage jmaeew.TypeMessage
 			if config.Config.TestWarning {
 				message = constants.TestMessage
 			}
 			json.Unmarshal(message, &typeMessage)
 			if typeMessage.Type == "jma_eew" {
 				log.Printf("recv: %s", message)
-				var jmaeew JMAEEW
+				var jmaeew jmaeew.JMAEEW
 				json.Unmarshal(message, &jmaeew)
 				if !jmaeew.IsWarn && config.Config.OnlyWarnings {
 					continue
@@ -168,6 +113,10 @@ func Listen() {
 						})))
 						<-donep
 						speaker.Close()
+					}
+
+					if config.Config.RenderRealtimeVis {
+						go render.Render(jmaeew)
 					}
 				}
 			}

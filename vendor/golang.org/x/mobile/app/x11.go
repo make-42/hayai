@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// +build linux,!android
+//go:build linux && !android
 
 package app
 
@@ -51,8 +51,12 @@ func main(f func(App)) {
 
 	donec := make(chan struct{})
 	go func() {
+		// close the donec channel in a defer statement
+		// so that we could still be able to return even
+		// if f panics.
+		defer close(donec)
+
 		f(theApp)
-		close(donec)
 	}()
 
 	// TODO: can we get the actual vsync signal?

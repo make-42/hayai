@@ -8,6 +8,7 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
+// Rest of config
 type ConfigS struct {
 	OnlyWarnings                      bool
 	Latitude                          float64
@@ -19,6 +20,12 @@ type ConfigS struct {
 	IssueNotification                 bool
 	OpenWebPages                      bool
 	TestWarning                       bool
+	RenderRealtimeVis                 bool
+	RealtimeVisFPS                    int
+	RealtimeVisFontSize               float64
+	RealtimeVisTextPadding            float64
+	RealtimeVisCircleResolution       int
+	RealtimeVisRenderSize             int
 	RetryConnectionEveryXS            float64
 }
 
@@ -35,6 +42,12 @@ var DefaultConfig = ConfigS{
 	IssueNotification:                 true,
 	OpenWebPages:                      false,
 	TestWarning:                       false,
+	RenderRealtimeVis:                 true,
+	RealtimeVisFPS:                    165,
+	RealtimeVisFontSize:               32,
+	RealtimeVisTextPadding:            32,
+	RealtimeVisCircleResolution:       60,
+	RealtimeVisRenderSize:             1280,
 	RetryConnectionEveryXS:            30,
 }
 

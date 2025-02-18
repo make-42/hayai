@@ -2,14 +2,12 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// +build darwin
-// +build 386 amd64
-// +build !ios
+//go:build darwin && !ios
 
 package gldriver
 
 /*
-#cgo CFLAGS: -x objective-c
+#cgo CFLAGS: -x objective-c -DGL_SILENCE_DEPRECATION
 #cgo LDFLAGS: -framework Cocoa -framework OpenGL
 #include <OpenGL/gl3.h>
 #import <Carbon/Carbon.h> // for HIToolbox/Events.h
@@ -231,11 +229,11 @@ var mods = [...]struct {
 	{1<<17 | 0x102, C.kVK_Shift, key.ModShift},
 	{1<<17 | 0x104, C.kVK_RightShift, key.ModShift},
 	{1<<18 | 0x101, C.kVK_Control, key.ModControl},
-	// TODO key.ControlRight
+	{33<<13 | 0x100, C.kVK_RightControl, key.ModControl},
 	{1<<19 | 0x120, C.kVK_Option, key.ModAlt},
 	{1<<19 | 0x140, C.kVK_RightOption, key.ModAlt},
 	{1<<20 | 0x108, C.kVK_Command, key.ModMeta},
-	{1<<20 | 0x110, C.kVK_Command, key.ModMeta}, // TODO: missing kVK_RightCommand
+	{1<<20 | 0x110, 0x36 /* kVK_RightCommand */, key.ModMeta},
 }
 
 func cocoaMods(flags uint32) (m key.Modifiers) {
@@ -290,7 +288,7 @@ func mouseEvent(id uintptr, x, y, dx, dy float32, ty, button int32, flags uint32
 		// can produce wheel events in opposite directions, but the
 		// direction matches what other programs on the OS do.
 		//
-		// If we wanted to expose the phsyical device motion in the
+		// If we wanted to expose the physical device motion in the
 		// event we could use [NSEvent isDirectionInvertedFromDevice]
 		// to know if "natural scrolling" is enabled.
 		//
@@ -412,6 +410,7 @@ func cocoaRune(r rune) rune {
 // into the standard keycodes used by the key package.
 //
 // To get a sense of the key map, see the diagram on
+//
 //	http://boredzo.org/blog/archives/2007-05-22/virtual-key-codes
 func cocoaKeyCode(vkcode uint16) key.Code {
 	switch vkcode {

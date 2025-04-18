@@ -1,4 +1,6 @@
 # hayai
+![image](https://github.com/user-attachments/assets/cd37838f-c5ce-438d-90ff-f7b5e0b16ea0)
+
 An EEW system for Linux using JMA data provided by the Wolfx Project.
 
 This software comes with zero guarantee. This software could fail at any time. I made this since there were no better free and open source alternatives for Linux.
